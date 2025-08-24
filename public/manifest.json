@@ -1,0 +1,45 @@
+{
+  "short_name": "Habit Tracker",
+  "name": "Habit Tracker & Routine Maker",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#3b82f6",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "description": "Track habits, create routines, and set reminders to stay organized",
+  "categories": ["productivity", "lifestyle", "health"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Add Habit",
+      "short_name": "Add Habit",
+      "description": "Create a new habit to track",
+      "url": "/habits?action=add",
+      "icons": [{ "src": "icons/add-habit.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Add Reminder",
+      "short_name": "Add Reminder",
+      "description": "Create a new reminder",
+      "url": "/reminders?action=add",
+      "icons": [{ "src": "icons/add-reminder.png", "sizes": "192x192" }]
+    }
+  ]
+}
