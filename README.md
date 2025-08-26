@@ -56,20 +56,6 @@ habit-tracker/
 
 ## Firebase Configuration
 
-The application uses Firebase for authentication, database, and notifications. The configuration is set up in `src/services/firebase.js`:
-
-```javascript
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyBb18dFEugSNpCye_CAMCRRyQm00_KO7e0",
-  authDomain: "to-dolist-83920.firebaseapp.com",
-  projectId: "to-dolist-83920",
-  storageBucket: "to-dolist-83920.firebasestorage.app",
-  messagingSenderId: "956562472595",
-  appId: "1:956562472595:web:39fbb1706daece64541766",
-  measurementId: "G-YE2ZWHZGV9"
-};
-```
 
 ## Getting Started
 
