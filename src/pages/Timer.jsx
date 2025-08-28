@@ -173,7 +173,7 @@ const Timer = () => {
     switch (timerState) {
       case 'work': return 'bg-red-500';
       case 'break': return 'bg-green-500';
-      case 'longBreak': return 'bg-blue-500';
+      case 'longBreak': return 'bg-primary';
       default: return 'bg-gray-500';
     }
   };
@@ -192,7 +192,7 @@ const Timer = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 pb-16">
+    <div className="min-h-screen bg-white dark:bg-black pb-16">
       <Header title="Pomodoro Timer" />
       
       {/* Timer Display */}
@@ -212,7 +212,7 @@ const Timer = () => {
         <div className="flex items-center justify-center space-x-6 mb-8">
           <button 
             onClick={toggleTimer}
-            className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white hover:bg-blue-600 transition-colors"
+            className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white hover:bg-primary-600 transition-colors"
           >
             {isRunning ? <FaPause size={24} /> : <FaPlay size={24} />}
           </button>
@@ -241,21 +241,21 @@ const Timer = () => {
           </button>
           <button 
             onClick={switchToLongBreak}
-            className={`px-4 py-2 rounded-lg ${timerState === 'longBreak' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
+            className={`px-4 py-2 rounded-lg ${timerState === 'longBreak' ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
           >
             Long Break
           </button>
         </div>
         
         {/* Stats */}
-        <div className="w-full max-w-md bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+        <div className="w-full max-w-md bg-gray-50 dark:bg-black rounded-lg p-6 border dark:border-gold">
           <h3 className="text-xl font-bold mb-4 dark:text-white">Pomodoro Stats</h3>
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow">
+            <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow">
               <div className="text-2xl font-bold dark:text-white">{completedPomodoros}</div>
               <div className="text-gray-500 dark:text-gray-300">Completed</div>
             </div>
-            <div className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow">
+            <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow">
               <div className="text-2xl font-bold dark:text-white">{totalPomodoroHours.toFixed(2)}h</div>
               <div className="text-gray-500 dark:text-gray-300">Total Hours</div>
             </div>
@@ -338,7 +338,7 @@ const Timer = () => {
                 <div className="pt-4">
                   <button
                     onClick={requestNotificationPermission}
-                    className="flex items-center justify-center w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                    className="flex items-center justify-center w-full py-2 bg-primary text-white rounded-lg hover:bg-primary-600"
                   >
                     <FaBell className="mr-2" />
                     Enable Notifications
@@ -360,7 +360,7 @@ const Timer = () => {
                 </button>
                 <button
                   onClick={saveSettings}
-                  className="flex-1 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  className="flex-1 py-2 bg-primary text-white rounded-lg hover:bg-primary-600"
                 >
                   Save
                 </button>

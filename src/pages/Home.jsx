@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaBars, FaPlus } from 'react-icons/fa';
+import { FaBars, FaPlus, FaPen } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import TabNavigation from '../components/TabNavigation';
@@ -14,6 +14,8 @@ import { useReminders } from '../hooks/useReminders';
 const Home = () => {
   const [activeTab, setActiveTab] = useState('daily');
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingReminder, setEditingReminder] = useState(null);
   const [newReminderName, setNewReminderName] = useState('');
   const [newReminderTime, setNewReminderTime] = useState('');
   const [selectedDays, setSelectedDays] = useState([]);
@@ -24,6 +26,7 @@ const Home = () => {
     loading: remindersLoading, 
     error: remindersError, 
     createReminder, 
+    editReminder,
     toggleReminder,
     refreshReminders
   } = useReminders();
@@ -76,6 +79,33 @@ const Home = () => {
     }
   }, [newReminderName, newReminderTime, selectedDays, createReminder]);
 
+  const handleEditReminder = useCallback((reminder) => {
+    setEditingReminder(reminder);
+    setNewReminderName(reminder.name);
+    setNewReminderTime(reminder.time);
+    setSelectedDays(reminder.days || []);
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handleUpdateReminder = useCallback(async () => {
+    if (!newReminderName.trim() || !newReminderTime || !editingReminder) return;
+
+    const reminderData = {
+      name: newReminderName.trim(),
+      time: newReminderTime,
+      days: selectedDays.length > 0 ? selectedDays : [0, 1, 2, 3, 4, 5, 6],
+    };
+
+    const result = await editReminder(editingReminder.id, reminderData);
+    if (result) {
+      setEditingReminder(null);
+      setNewReminderName('');
+      setNewReminderTime('');
+      setSelectedDays([]);
+      setIsEditModalOpen(false);
+    }
+  }, [newReminderName, newReminderTime, selectedDays, editingReminder, editReminder]);
+
   const handleToggleReminder = useCallback(async (id, enabled) => {
     const result = await toggleReminder(id, !enabled);
     if (result) {
@@ -111,11 +141,14 @@ const Home = () => {
             checked={reminder.enabled}
             onChange={() => handleToggleReminder(reminder.id, reminder.enabled)}
           />
-          <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500 dark:peer-checked:bg-blue-600"></div>
+          <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary dark:peer-checked:bg-primary"></div>
         </label>
+        <button onClick={() => handleEditReminder(reminder)} className="ml-4 text-gray-400 hover:text-primary">
+          <FaPen size={16} />
+        </button>
       </div>
     );
-  }, [handleToggleReminder]);
+  }, [handleToggleReminder, handleEditReminder]);
 
   const loading = remindersLoading;
   const error = remindersError;
@@ -124,7 +157,7 @@ const Home = () => {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900 pb-16 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-300">Loading data...</p>
         </div>
       </div>
@@ -133,7 +166,7 @@ const Home = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 pb-16 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-black pb-16 flex items-center justify-center">
         <div className="text-center p-4">
           <p className="text-red-500 dark:text-red-400">Error: {error}</p>
           <div className="mt-4 flex space-x-2">
@@ -142,7 +175,7 @@ const Home = () => {
                 refreshRoutines();
                 refreshReminders();
               }}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-600"
             >
               Retry
             </button>
@@ -159,7 +192,7 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 pb-16">
+    <div className="min-h-screen bg-white dark:bg-black pb-16">
       <Header title="Habit Tracker" />
       
       <TabNavigation 
@@ -175,7 +208,7 @@ const Home = () => {
             <h2 className="text-xl font-medium dark:text-white">Today's Reminders</h2>
             <button 
               onClick={handleAddReminder}
-              className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300"
+              className="text-primary dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300"
             >
               <FaPlus />
             </button>
@@ -187,7 +220,7 @@ const Home = () => {
                 <p className="text-gray-500 dark:text-gray-400">No reminders for today</p>
                 <button 
                   onClick={handleAddReminder}
-                  className="mt-2 text-blue-500 dark:text-blue-400 hover:underline text-sm"
+                  className="mt-2 text-primary dark:text-primary-400 hover:underline text-sm"
                 >
                   Set a reminder
                 </button>
@@ -239,7 +272,7 @@ const Home = () => {
                   type="button"
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
                     selectedDays.includes(index)
-                      ? 'bg-blue-500 dark:bg-blue-600 text-white'
+                      ? 'bg-primary dark:bg-primary-600 text-white'
                       : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                   onClick={() => toggleDay(index)}
@@ -261,6 +294,68 @@ const Home = () => {
               onClick={handleCreateReminder}
             >
               Add Reminder
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Reminder"
+      >
+        <div className="space-y-4">
+          <Input
+            id="edit-reminder-name"
+            label="Reminder Name"
+            value={newReminderName}
+            onChange={(e) => setNewReminderName(e.target.value)}
+            placeholder="e.g., Morning Routine"
+            required
+          />
+
+          <Input
+            id="edit-reminder-time"
+            label="Time"
+            type="time"
+            value={newReminderTime}
+            onChange={(e) => setNewReminderTime(e.target.value)}
+            required
+          />
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Repeat
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                    selectedDays.includes(index)
+                      ? 'bg-primary dark:bg-primary-600 text-white'
+                      : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                  }`}
+                  onClick={() => toggleDay(index)}
+                >
+                  {day}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2 mt-6">
+            <Button
+              variant="secondary"
+              onClick={() => setIsEditModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateReminder}
+            >
+              Save Changes
             </Button>
           </div>
         </div>

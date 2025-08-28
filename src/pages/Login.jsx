@@ -46,7 +46,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-black">
       <Header title="Log in" showBackButton />
       
       <div className="px-4 py-6">
@@ -105,7 +105,7 @@ const Login = () => {
         
         <div className="mt-6 text-center text-sm">
           <span className="text-gray-600 dark:text-gray-400">Don't have an account? </span>
-          <Link to="/signup" className="text-blue-600 dark:text-blue-400 font-medium">
+          <Link to="/signup" className="text-primary dark:text-primary-400 font-medium">
             Sign up
           </Link>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaPen } from 'react-icons/fa';
 import Header from '../components/Header';
 import BottomNavigation from '../components/BottomNavigation';
 import FloatingActionButton from '../components/FloatingActionButton';
@@ -10,6 +10,8 @@ import { useRoutines } from '../hooks/useRoutines';
 
 const Todo = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingRoutine, setEditingRoutine] = useState(null);
   const [newRoutineName, setNewRoutineName] = useState('');
   const [newRoutineTime, setNewRoutineTime] = useState('');
   const { 
@@ -17,10 +19,13 @@ const Todo = () => {
     loading, 
     error, 
     createRoutine,
+    editRoutine,
     refreshRoutines
   } = useRoutines();
 
   const handleAddRoutine = useCallback(() => {
+    setNewRoutineName('');
+    setNewRoutineTime('');
     setIsModalOpen(true);
   }, []);
 
@@ -42,6 +47,30 @@ const Todo = () => {
     }
   }, [newRoutineName, newRoutineTime, createRoutine]);
 
+  const handleEditRoutine = useCallback((routine) => {
+    setEditingRoutine(routine);
+    setNewRoutineName(routine.name);
+    setNewRoutineTime(routine.time);
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handleUpdateRoutine = useCallback(async () => {
+    if (!newRoutineName.trim() || !editingRoutine) return;
+
+    const routineData = {
+      name: newRoutineName.trim(),
+      time: newRoutineTime.trim(),
+    };
+
+    const result = await editRoutine(editingRoutine.id, routineData);
+    if (result) {
+      setEditingRoutine(null);
+      setNewRoutineName('');
+      setNewRoutineTime('');
+      setIsEditModalOpen(false);
+    }
+  }, [newRoutineName, newRoutineTime, editingRoutine, editRoutine]);
+
   const RoutineItem = React.memo(({ routine }) => {
     return (
       <div className="flex items-center justify-between py-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded px-2 transition-colors duration-200">
@@ -49,7 +78,7 @@ const Todo = () => {
           <button 
             className={`mr-3 w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 ${
               routine.completed 
-                ? 'bg-blue-500 border-blue-500' 
+                ? 'bg-primary border-primary'
                 : 'border-gray-300 dark:border-gray-600'
             }`}
           >
@@ -66,15 +95,18 @@ const Todo = () => {
             )}
           </div>
         </div>
+        <button onClick={() => handleEditRoutine(routine)} className="text-gray-400 hover:text-primary">
+          <FaPen size={16} />
+        </button>
       </div>
     );
   });
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 pb-16 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-black pb-16 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-300">Loading routines...</p>
         </div>
       </div>
@@ -83,13 +115,13 @@ const Todo = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 pb-16 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-black pb-16 flex items-center justify-center">
         <div className="text-center p-4">
           <p className="text-red-500 dark:text-red-400">Error: {error}</p>
           <div className="mt-4 flex space-x-2">
             <button 
               onClick={refreshRoutines}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-600"
             >
               Retry
             </button>
@@ -106,7 +138,7 @@ const Todo = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 pb-16">
+    <div className="min-h-screen bg-white dark:bg-black pb-16">
       <Header 
         title="Routines" 
         showAddButton
@@ -120,7 +152,7 @@ const Todo = () => {
               <p className="text-gray-500 dark:text-gray-400">No routines scheduled</p>
               <button 
                 onClick={handleAddRoutine}
-                className="mt-4 text-blue-500 dark:text-blue-400 hover:underline"
+                className="mt-4 text-primary dark:text-primary-400 hover:underline"
               >
                 Create your first routine
               </button>
@@ -170,6 +202,45 @@ const Todo = () => {
               onClick={handleCreateRoutine}
             >
               Add Routine
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Routine"
+      >
+        <div className="space-y-4">
+          <Input
+            id="edit-routine-name"
+            label="Routine Name"
+            value={newRoutineName}
+            onChange={(e) => setNewRoutineName(e.target.value)}
+            placeholder="e.g., Morning Routine"
+            required
+          />
+
+          <Input
+            id="edit-routine-time"
+            label="Time (Optional)"
+            type="time"
+            value={newRoutineTime}
+            onChange={(e) => setNewRoutineTime(e.target.value)}
+          />
+
+          <div className="flex justify-end space-x-2 mt-6">
+            <Button
+              variant="secondary"
+              onClick={() => setIsEditModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateRoutine}
+            >
+              Save Changes
             </Button>
           </div>
         </div>

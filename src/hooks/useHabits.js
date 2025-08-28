@@ -66,6 +66,18 @@ export const useHabits = () => {
     }
   }, []);
 
+  const editHabit = useCallback(async (habitId, habitData) => {
+    try {
+      setError(null);
+      await updateHabit(habitId, habitData);
+      return true;
+    } catch (err) {
+      console.error('Error updating habit:', err);
+      setError('Failed to update habit');
+      return false;
+    }
+  }, []);
+
   const removeHabit = useCallback(async (habitId) => {
     try {
       setError(null);
@@ -94,10 +106,11 @@ export const useHabits = () => {
     error,
     createHabit,
     updateHabitProgress,
+    editHabit,
     removeHabit,
     activeHabits,
     completedHabits
-  }), [habits, loading, error, createHabit, updateHabitProgress, removeHabit, activeHabits, completedHabits]);
+  }), [habits, loading, error, createHabit, updateHabitProgress, editHabit, removeHabit, activeHabits, completedHabits]);
 
   return value;
 };
