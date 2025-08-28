@@ -21,6 +21,7 @@ const Habits = () => {
     error, 
     createHabit, 
     editHabit,
+    removeHabit,
     activeHabits, 
     completedHabits,
     refreshHabits
@@ -73,6 +74,16 @@ const Habits = () => {
       setIsEditModalOpen(false);
     }
   }, [newHabitName, newHabitFrequency, editingHabit, editHabit]);
+
+  const handleDeleteHabit = useCallback(async () => {
+    if (!editingHabit) return;
+
+    const result = await removeHabit(editingHabit.id);
+    if (result) {
+      setEditingHabit(null);
+      setIsEditModalOpen(false);
+    }
+  }, [editingHabit, removeHabit]);
 
   const getHabitIcon = useCallback((habitName) => {
     const nameLower = habitName.toLowerCase();
@@ -331,18 +342,26 @@ const Habits = () => {
             </div>
           </div>
 
-          <div className="flex justify-end space-x-2 mt-6">
+          <div className="flex justify-between items-center mt-6">
             <Button
-              variant="secondary"
-              onClick={() => setIsEditModalOpen(false)}
+              variant="danger"
+              onClick={handleDeleteHabit}
             >
-              Cancel
+              Delete
             </Button>
-            <Button
-              onClick={handleUpdateHabit}
-            >
-              Save Changes
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                variant="secondary"
+                onClick={() => setIsEditModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpdateHabit}
+              >
+                Save Changes
+              </Button>
+            </div>
           </div>
         </div>
       </Modal>
