@@ -27,6 +27,7 @@ const Home = () => {
     error: remindersError, 
     createReminder, 
     editReminder,
+    removeReminder,
     toggleReminder,
     refreshReminders
   } = useReminders();
@@ -105,6 +106,16 @@ const Home = () => {
       setIsEditModalOpen(false);
     }
   }, [newReminderName, newReminderTime, selectedDays, editingReminder, editReminder]);
+
+  const handleDeleteReminder = useCallback(async () => {
+    if (!editingReminder) return;
+
+    const result = await removeReminder(editingReminder.id);
+    if (result) {
+      setEditingReminder(null);
+      setIsEditModalOpen(false);
+    }
+  }, [editingReminder, removeReminder]);
 
   const handleToggleReminder = useCallback(async (id, enabled) => {
     const result = await toggleReminder(id, !enabled);
@@ -345,18 +356,26 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="flex justify-end space-x-2 mt-6">
+          <div className="flex justify-between items-center mt-6">
             <Button
-              variant="secondary"
-              onClick={() => setIsEditModalOpen(false)}
+              variant="danger"
+              onClick={handleDeleteReminder}
             >
-              Cancel
+              Delete
             </Button>
-            <Button
-              onClick={handleUpdateReminder}
-            >
-              Save Changes
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                variant="secondary"
+                onClick={() => setIsEditModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpdateReminder}
+              >
+                Save Changes
+              </Button>
+            </div>
           </div>
         </div>
       </Modal>

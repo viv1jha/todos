@@ -20,6 +20,7 @@ const Todo = () => {
     error, 
     createRoutine,
     editRoutine,
+    removeRoutine,
     refreshRoutines
   } = useRoutines();
 
@@ -70,6 +71,16 @@ const Todo = () => {
       setIsEditModalOpen(false);
     }
   }, [newRoutineName, newRoutineTime, editingRoutine, editRoutine]);
+
+  const handleDeleteRoutine = useCallback(async () => {
+    if (!editingRoutine) return;
+
+    const result = await removeRoutine(editingRoutine.id);
+    if (result) {
+      setEditingRoutine(null);
+      setIsEditModalOpen(false);
+    }
+  }, [editingRoutine, removeRoutine]);
 
   const RoutineItem = React.memo(({ routine }) => {
     return (
@@ -230,18 +241,26 @@ const Todo = () => {
             onChange={(e) => setNewRoutineTime(e.target.value)}
           />
 
-          <div className="flex justify-end space-x-2 mt-6">
+          <div className="flex justify-between items-center mt-6">
             <Button
-              variant="secondary"
-              onClick={() => setIsEditModalOpen(false)}
+              variant="danger"
+              onClick={handleDeleteRoutine}
             >
-              Cancel
+              Delete
             </Button>
-            <Button
-              onClick={handleUpdateRoutine}
-            >
-              Save Changes
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                variant="secondary"
+                onClick={() => setIsEditModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpdateRoutine}
+              >
+                Save Changes
+              </Button>
+            </div>
           </div>
         </div>
       </Modal>
