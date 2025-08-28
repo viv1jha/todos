@@ -10,6 +10,8 @@ import { useHabits } from '../hooks/useHabits';
 
 const Habits = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingHabit, setEditingHabit] = useState(null);
   const [newHabitName, setNewHabitName] = useState('');
   const [newHabitFrequency, setNewHabitFrequency] = useState('daily');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // YYYY-MM-DD format
@@ -18,12 +20,15 @@ const Habits = () => {
     loading, 
     error, 
     createHabit, 
+    editHabit,
     activeHabits, 
     completedHabits,
     refreshHabits
   } = useHabits();
 
   const handleAddHabit = useCallback(() => {
+    setNewHabitName('');
+    setNewHabitFrequency('daily');
     setIsModalOpen(true);
   }, []);
 
@@ -44,6 +49,30 @@ const Habits = () => {
       setIsModalOpen(false);
     }
   }, [newHabitName, newHabitFrequency, createHabit]);
+
+  const handleEditHabit = useCallback((habit) => {
+    setEditingHabit(habit);
+    setNewHabitName(habit.name);
+    setNewHabitFrequency(habit.frequency);
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handleUpdateHabit = useCallback(async () => {
+    if (!newHabitName.trim() || !editingHabit) return;
+
+    const habitData = {
+      name: newHabitName.trim(),
+      frequency: newHabitFrequency,
+    };
+
+    const result = await editHabit(editingHabit.id, habitData);
+    if (result) {
+      setEditingHabit(null);
+      setNewHabitName('');
+      setNewHabitFrequency('daily');
+      setIsEditModalOpen(false);
+    }
+  }, [newHabitName, newHabitFrequency, editingHabit, editHabit]);
 
   const getHabitIcon = useCallback((habitName) => {
     const nameLower = habitName.toLowerCase();
@@ -71,9 +100,9 @@ const Habits = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 pb-16 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-black pb-16 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-300">Loading habits...</p>
         </div>
       </div>
@@ -82,13 +111,13 @@ const Habits = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 pb-16 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-black pb-16 flex items-center justify-center">
         <div className="text-center p-4">
           <p className="text-red-500 dark:text-red-400">Error: {error}</p>
           <div className="mt-4 flex space-x-2">
             <button 
               onClick={refreshHabits}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-600"
             >
               Retry
             </button>
@@ -109,7 +138,7 @@ const Habits = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 pb-16">
+    <div className="min-h-screen bg-white dark:bg-black pb-16">
       <Header 
         title="Habit Tracker" 
         showAddButton
@@ -133,7 +162,7 @@ const Habits = () => {
               <p className="text-gray-500 dark:text-gray-400">No active habits</p>
               <button 
                 onClick={handleAddHabit}
-                className="mt-4 text-blue-500 dark:text-blue-400 hover:underline"
+                className="mt-4 text-primary dark:text-primary-400 hover:underline"
               >
                 Create your first habit
               </button>
@@ -158,11 +187,14 @@ const Habits = () => {
                 <div className="flex items-center">
                   <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
                     <div 
-                      className="bg-blue-500 dark:bg-blue-600 h-2 rounded-full" 
+                      className="bg-primary dark:bg-primary-600 h-2 rounded-full"
                       style={{ width: `${habit.progress}%` }}
                     ></div>
                   </div>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">{habit.progress}%</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300 mr-4">{habit.progress}%</span>
+                  <button onClick={() => handleEditHabit(habit)} className="text-gray-400 hover:text-primary">
+                    <FaPen size={16} />
+                  </button>
                 </div>
               </div>
             ))
@@ -235,7 +267,7 @@ const Habits = () => {
                   type="button"
                   className={`flex-1 py-2 text-sm font-medium ${
                     newHabitFrequency === frequency
-                      ? 'bg-blue-500 dark:bg-blue-600 text-white'
+                      ? 'bg-primary dark:bg-primary-600 text-white'
                       : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
                   }`}
                   onClick={() => setNewHabitFrequency(frequency)}
@@ -257,6 +289,59 @@ const Habits = () => {
               onClick={handleCreateHabit}
             >
               Add Habit
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Habit"
+      >
+        <div className="space-y-4">
+          <Input
+            id="edit-habit-name"
+            label="Habit Name"
+            value={newHabitName}
+            onChange={(e) => setNewHabitName(e.target.value)}
+            placeholder="e.g., Morning Exercise"
+            required
+          />
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Frequency
+            </label>
+            <div className="flex border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
+              {['daily', 'weekly', 'monthly'].map((frequency) => (
+                <button
+                  key={frequency}
+                  type="button"
+                  className={`flex-1 py-2 text-sm font-medium ${
+                    newHabitFrequency === frequency
+                      ? 'bg-primary dark:bg-primary-600 text-white'
+                      : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
+                  }`}
+                  onClick={() => setNewHabitFrequency(frequency)}
+                >
+                  {frequency.charAt(0).toUpperCase() + frequency.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2 mt-6">
+            <Button
+              variant="secondary"
+              onClick={() => setIsEditModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateHabit}
+            >
+              Save Changes
             </Button>
           </div>
         </div>
